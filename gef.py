@@ -117,6 +117,7 @@ GEF_PROMPT = "gef> "
 GEF_PROMPT_ON = "\001\033[1;32m\002{:s}\001\033[0m\002".format(GEF_PROMPT)
 GEF_PROMPT_OFF = "\001\033[1;31m\002{:s}\001\033[0m\002".format(GEF_PROMPT)
 
+ansi_remove = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
 def http_get(url):
     """Basic HTTP wrapper for GET request."""
@@ -25527,6 +25528,7 @@ class ContextCommand(GenericCommand):
         nb_insn = self.get_setting("nb_lines_code")
         nb_insn_prev = self.get_setting("nb_lines_code_prev")
         show_opcodes_size = self.get_setting("show_opcodes_size")
+        past_insns_color = get_gef_setting("theme.old_context")
         padding = " " * len(RIGHT_ARROW[1:])
 
         if current_arch is None and is_remote_debug():
@@ -25577,6 +25579,8 @@ class ContextCommand(GenericCommand):
 
             # bp prefix and branch info
             if insn.address != pc:
+                text = ansi_remove.sub('', text)
+                text = Color.colorify(text, past_insns_color)
                 line += "{}{}{}".format(bp_prefix, padding, text)
 
             elif insn.address == pc:
